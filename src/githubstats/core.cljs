@@ -13,7 +13,6 @@
 
 (def repos "https://api.github.com/users/gphilipp/repos")
 
-
 (defn GET [url]
   (let [c (chan)]
     (xhr/send url
@@ -24,9 +23,40 @@
                       (close! c)))))
     c))
 
-(def res (GET repos))
-(go (prn (<! res)))
+(def channel (GET repos))
+(go
+  (def stats (<! channel)))
 
+(def statsclj (js->clj stats))
+(count statsclj)
+(get statsclj 0)
+
+(def statsfreq (frequencies (map #(get % "language") statsclj)))
+
+(def data (clj->js (for [[k v] statsfreq]
+            {"lang" k "count" v})))
+
+
+
+
+;var svg = dimple.newSvg("#chartContainer", 590, 400);
+;d3.tsv("/data/example_data.tsv", function (data) {
+;var myChart = new dimple.chart(svg, data);
+;myChart.setBounds(60, 30, 510, 305)
+;var x = myChart.addCategoryAxis("x", "Month");
+;x.addOrderRule("Date");
+;myChart.addMeasureAxis("y", "Unit Sales");
+;myChart.addSeries(null, dimple.plot.bar);
+;myChart.draw();
+
+(let [svg (.newSvg js/dimple "#stats" 590 400)
+      my-chart (js/dimple.chart. svg data)
+      x (.addCategoryAxis my-chart "x" "lang")
+      y (.addMeasureAxis my-chart "y" "count")]
+
+  #_(.setBounds my-chart 60 30 510 305)
+  #_(.addSeries my-chart nil dimple.plot.bar)
+  #_(.draw my-chart))
 
 (om/root
   (fn [app owner]
