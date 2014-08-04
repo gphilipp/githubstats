@@ -18,9 +18,10 @@
   (let [c (chan)]
     (xhr/send url
               (fn [e]
-                (go
-                  (>! c (-> e .-target .getResponseJson))
-                  (close! c))))
+                (let [res (-> e .-target .getResponseJson)]
+                    (go
+                      (>! c res)
+                      (close! c)))))
     c))
 
 (def res (GET repos))
