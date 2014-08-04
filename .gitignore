@@ -7,3 +7,7 @@ pom.xml
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/
+.idea/
+target/
+.nrepl-port
+*.iml
