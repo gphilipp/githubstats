@@ -29,12 +29,14 @@
 
 (def statsclj (js->clj stats))
 (count statsclj)
-(get statsclj 0)
 
 (def statsfreq (frequencies (map #(get % "language") statsclj)))
 
-(def data (clj->js (for [[k v] statsfreq]
-            {"lang" k "count" v})))
+(def data (clj->js
+            (for [[k v] statsfreq
+                  :when k]
+              {"lang" k "count" v})))
+
 
 
 
@@ -50,15 +52,17 @@
 ;myChart.draw();
 
 (let [svg (.newSvg js/dimple "#stats" 590 400)
-      my-chart (js/dimple.chart. svg data)
-      x (.addCategoryAxis my-chart "x" "lang")
-      y (.addMeasureAxis my-chart "y" "count")]
+      ;data (clj->js (for [[k v] statsfreq]
+      ;                {"lang" k "count" v}))
+      chart (.-chart js/dimple)
+      my-chart (chart. svg data)
+      _ (.setBounds my-chart 60 30 510 305)
+      _ (.addCategoryAxis my-chart "x" "lang")
+      _ (.addMeasureAxis my-chart "y" "count")
+      _ (.addSeries my-chart nil (-> js/dimple .-plot .-bar))]
+  (.draw my-chart))
 
-  #_(.setBounds my-chart 60 30 510 305)
-  #_(.addSeries my-chart nil dimple.plot.bar)
-  #_(.draw my-chart))
-
-(om/root
+#_(om/root
   (fn [app owner]
     (dom/h1 nil (:text app)))
   app-state
