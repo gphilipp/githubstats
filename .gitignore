@@ -11,3 +11,5 @@ pom.xml
 target/
 .nrepl-port
 *.iml
+githubstats.js
+.repl

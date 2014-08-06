@@ -9,8 +9,6 @@
 (enable-console-print!)
 (ws-repl/connect "ws://localhost:9001" :verbose true)
 
-(def app-state (atom {:text "Hello world!"}))
-
 (def repos "https://api.github.com/users/gphilipp/repos")
 
 (defn GET [url]
@@ -23,44 +21,31 @@
                       (close! c)))))
     c))
 
-(def channel (GET repos))
+(defn as-maps [statsfreq]
+  (clj->js
+    (for [[k v] statsfreq
+          :when k]
+      {"language used" k "number of repositories" v})))
+
+(defn draw-chart [data]
+  (let [svg (.newSvg js/dimple "#stats" 590 400)
+        chart (.-chart js/dimple)
+        my-chart (chart. svg data)]
+    (.setBounds my-chart 60 30 510 305)
+    (.addCategoryAxis my-chart "x" "language used")
+    (.addMeasureAxis my-chart "y" "number of repositories")
+    (.addSeries my-chart nil (-> js/dimple .-plot .-bar))
+    (.draw my-chart)))
+
 (go
-  (def stats (<! channel)))
+  (->> (<! (GET repos))
+       (js->clj)
+       (map #(get % "language"))
+       (frequencies)
+       (as-maps)
+       (draw-chart)))
 
-(def statsclj (js->clj stats))
-(count statsclj)
-
-(def statsfreq (frequencies (map #(get % "language") statsclj)))
-
-(def data (clj->js
-            (for [[k v] statsfreq
-                  :when k]
-              {"lang" k "count" v})))
-
-
-
-
-
-;var svg = dimple.newSvg("#chartContainer", 590, 400);
-;d3.tsv("/data/example_data.tsv", function (data) {
-;var myChart = new dimple.chart(svg, data);
-;myChart.setBounds(60, 30, 510, 305)
-;var x = myChart.addCategoryAxis("x", "Month");
-;x.addOrderRule("Date");
-;myChart.addMeasureAxis("y", "Unit Sales");
-;myChart.addSeries(null, dimple.plot.bar);
-;myChart.draw();
-
-(let [svg (.newSvg js/dimple "#stats" 590 400)
-      ;data (clj->js (for [[k v] statsfreq]
-      ;                {"lang" k "count" v}))
-      chart (.-chart js/dimple)
-      my-chart (chart. svg data)
-      _ (.setBounds my-chart 60 30 510 305)
-      _ (.addCategoryAxis my-chart "x" "lang")
-      _ (.addMeasureAxis my-chart "y" "count")
-      _ (.addSeries my-chart nil (-> js/dimple .-plot .-bar))]
-  (.draw my-chart))
+#_(def app-state (atom {:text "Hello world!"}))
 
 #_(om/root
   (fn [app owner]
