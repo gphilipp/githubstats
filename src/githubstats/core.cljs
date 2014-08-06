@@ -3,11 +3,18 @@
             [om.dom :as dom :include-macros true]
             [weasel.repl :as ws-repl]
             [goog.net.XhrIo :as xhr]
-            [cljs.core.async :as async :refer [close! chan >! <! put! take!]])
+            [cljs.core.async :as async :refer [close! chan >! <! put! take!]]
+            [cognitect.transit :as t])
   (:require-macros [cljs.core.async.macros :refer [go alt!]]))
 
 (enable-console-print!)
 (ws-repl/connect "ws://localhost:9001" :verbose true)
+
+(def rdr (t/reader :json))
+
+(defn json->clj [j]
+  (t/read rdr j))
+
 
 (def repos "https://api.github.com/users/gphilipp/repos")
 
@@ -15,7 +22,7 @@
   (let [c (chan)]
     (xhr/send url
               (fn [e]
-                (let [res (-> e .-target .getResponseJson)]
+                (let [res (-> e .-target .getResponseText)]
                     (go
                       (>! c res)
                       (close! c)))))
@@ -29,17 +36,19 @@
 
 (defn draw-chart [data]
   (let [svg (.newSvg js/dimple "#stats" 590 400)
-        chart (.-chart js/dimple)
-        my-chart (chart. svg data)]
-    (.setBounds my-chart 60 30 510 305)
-    (.addCategoryAxis my-chart "x" "language used")
-    (.addMeasureAxis my-chart "y" "number of repositories")
-    (.addSeries my-chart nil (-> js/dimple .-plot .-bar))
-    (.draw my-chart)))
+        Chart (.-chart js/dimple)]
+    (doto (Chart. svg data)
+      (.setBounds 60 30 510 305)
+      (.addCategoryAxis "x" "language used")
+      (.addMeasureAxis "y" "number of repositories")
+      (.addSeries nil (-> js/dimple .-plot .-bar))
+      .draw)))
+
+
 
 (go
   (->> (<! (GET repos))
-       (js->clj)
+       json->clj
        (map #(get % "language"))
        (frequencies)
        (as-maps)
