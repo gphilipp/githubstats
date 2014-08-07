@@ -6,6 +6,7 @@
                  [org.clojure/clojurescript "0.0-2268"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
                  [om "0.6.2"]
+                 [com.cognitect/transit-cljs "0.8.161"]
                  [weasel "0.3.0"]
                  [com.cemerick/piggieback "0.1.3"]]
 
