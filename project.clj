@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2322"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
-                 [om "0.6.2"]
+                 [om "0.7.1"]
                  [com.cognitect/transit-cljs "0.8.161"]
                  [weasel "0.3.0"]
                  [com.cemerick/piggieback "0.1.3"]]
