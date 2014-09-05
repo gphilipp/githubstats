@@ -12,9 +12,9 @@
 
 (def rdr (t/reader :json))
 
+
 (defn json->clj [j]
   (t/read rdr j))
-
 
 (def repos "https://api.github.com/users/gphilipp/repos")
 
@@ -38,12 +38,11 @@
   (let [svg (.newSvg js/dimple "#stats" 590 400)
         Chart (.-chart js/dimple)]
     (doto (Chart. svg data)
-      (.setBounds 60 30 510 305)
-      (.addCategoryAxis "x" "language used")
-      (.addMeasureAxis "y" "number of repositories")
-      (.addSeries nil (-> js/dimple .-plot .-bar))
-      .draw)))
-
+     (.setBounds 60 30 510 305)
+     (.addMeasureAxis "y" "number of repositories")
+     (.addCategoryAxis "x" "language used")
+     (.addSeries nil (-> js/dimple .-plot .-bar))
+     .draw)))
 
 
 (go
